@@ -35,7 +35,7 @@ class Board:
     def on_click(self, cell):
         if cell:
             self.draw(screen, cell)
-            print(cell)
+            # print(cell)
         else:
             print('None')
 
@@ -61,13 +61,13 @@ class Board:
                     c += 1
                 else:
                     if decision[j][i] == 0 and c != 0:
-                        #print("{}".format(c), end=' ')
+                        # print("{}".format(c), end=' ')
                         text = font.render(str(c), True, (0, 0, 0))
                         wdth = text.get_width()
                         position += wdth + 10
                         screen.blit(text, (position, j * self.cell_size + self.top + 10))
                         c = 0
-            print()
+            # print()
         for j in range(len(decision[0])):
             c = 0
             position = self.top + len(decision) * self.cell_size - 10
@@ -76,24 +76,26 @@ class Board:
                     c += 1
                 else:
                     if decision[i][j] == 0 and c != 0:
-                        print("{}".format(c), end=' ')
+                        # print("{}".format(c), end=' ')
                         text = font.render(str(c), True, (0, 0, 0))
                         h = text.get_height()
                         position += h + 5
                         screen.blit(text, (j * self.cell_size + self.top + 10, position))
                         c = 0
-            print()
-
-    def draw_text(self, screen, txt, x, y):
-        font = pygame.font.Font(None, 20)
-        text = font.render(txt, True, (0, 0, 0))
-        screen.blit(text, (x, y))
+            # print()
 
     def count(self):
         for x in range(self.left, height, self.height):
             for y in range(self.top, height, self.height):
                 self.spx.append(x)
                 self.spy.append(y)
+
+    def is_win(self):
+        for j in range(len(self.board)):
+            for i in range(len(self.board[j])):
+                if self.board[i][j] != decision[j][i]:
+                    return False
+        return True
 
     def draw(self, screen, cell):
         x, y = cell
@@ -107,6 +109,8 @@ class Board:
             self.cell_size,
             self.cell_size))
         pygame.display.flip()
+        if self.is_win():
+            print("You win")
 
 
 if __name__ == '__main__':
