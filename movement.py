@@ -7,6 +7,8 @@ vertical_movement = [False, False]
 horizontal_movement = [True, True]
 jump = True
 vniz = False
+defeat = False
+v = 5
 
 player = None
 
@@ -14,31 +16,28 @@ player = None
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+defeat_group = pygame.sprite.Group()
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, pos_x, pos_y):
+    def __init__(self, ani):
         super().__init__(player_group, all_sprites)
         self.frames = []
-        self.cut_sheet(sheet, columns, rows)
+        for i in ani:
+            self.frames.append(i)
+
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect()
 
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
-        for j in range(rows):
-            for e in range(columns):
-                frame_location = (self.rect.w * e, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location, self.rect.size)))
-
     def update(self, x, y):
-        global jump_status, vniz
+        global jump_status, vniz, defeat
+        # self.mask = pygame.mask.from_surface(self.image) МАСКА!
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect().move(x, y)
+        if pygame.sprite.spritecollideany(self, defeat_group):
+            defeat = True
         a = pygame.sprite.spritecollide(self, tiles_group, False)
         l = []
         r = []
@@ -92,13 +91,23 @@ def generate_level(level):
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '#':
-                Tile('grass', x, y)
+                Tile('grass', x, y, tiles_group)
             elif level[y][x] == '*':
-                Tile('land', x, y)
+                Tile('land', x, y, tiles_group)
             elif level[y][x] == '(':
-                Tile('grassl', x, y)
+                Tile('grassl', x, y, tiles_group)
             elif level[y][x] == ')':
-                Tile('grassr', x, y)
+                Tile('grassr', x, y, tiles_group)
+            elif level[y][x] == ',':
+                Tile('landl', x, y, tiles_group)
+            elif level[y][x] == 'l':
+                Tile('land_y_lu', x, y, tiles_group)
+            elif level[y][x] == 'r':
+                Tile('land_y_ru', x, y, tiles_group)
+            elif level[y][x] == 'o':
+                Tile('island', x, y, tiles_group)
+            elif level[y][x] == 'p':
+                Tile('plant', x, y, defeat_group)
     return x, y
 
 
@@ -122,10 +131,15 @@ def load_level(filename):
 
 tile_images = {
     'land': load_image('земля.jpg', -1),
-    'grass': load_image('трава.jpg', -1),
-    'grassl': load_image('травал.jpg', -1),
-    'grassr': load_image('травап.jpg', -1),
-    'nothing': load_image('ничего.png', -1)
+    'grass': load_image('трава.png', -1),
+    'grassl': load_image('травал.png', -1),
+    'grassr': load_image('травап.png', -1),
+    'nothing': load_image('ничего.png', -1),
+    'landl': load_image('землябокл.png', -1),
+    'land_y_lu': load_image('земля_у_лв.png', -1),
+    'land_y_ru': load_image('земля_у_пв.png', -1),
+    'island': load_image('остров.png', -1),
+    'plant': load_image('раст.png', -1)
 }
 # player_image = load_image('mario.png')
 
@@ -133,8 +147,8 @@ tile_width = tile_height = 35
 
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(tiles_group, all_sprites)
+    def __init__(self, tile_type, pos_x, pos_y, group):
+        super().__init__(group, all_sprites)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y + 80)
@@ -150,19 +164,21 @@ class Player(pygame.sprite.Sprite):
 
 # Сделать все функции и классы
 def animation():
-    global jump_status, jump_height, x, y, jump
+    global jump_status, jump_height, x, y, jump, v
     if jump_status and vertical_movement[0]:
         if jump_height > 0:
             y -= jump_height
             jump_height -= 4
+            v = 10
 
         else:
             jump_status = False
             jump_height = 20
+            v = 5
     else:
         jump_status = False
         jump_height = 20
-
+        v = 5
 
 
 def keyboard_events_down():
@@ -171,7 +187,6 @@ def keyboard_events_down():
         jump_status = True
     else:
         jump_status = False
-
 
 
 class Borders():
@@ -192,12 +207,28 @@ if __name__ == '__main__':
     level_x, level_y = generate_level(load_level('копия.txt'))
     x = 30
     y = 360
-    q = 5
+    q = v
     running = True
     jump_height = 20
-    right_animation = AnimatedSprite(load_image("right.png"), 8, 1, 50, 50)
-    left_animation = AnimatedSprite(load_image("left.png"), 8, 1, 50, 50)
-    state_animation = AnimatedSprite(load_image("stop.png"), 1, 1, 100, 100)
+    right_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '0.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '1.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '2.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '3.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '4.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '5.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '6.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '7.png')).convert_alpha(),
+                                      pygame.image.load(os.path.join('data', '8.png')).convert_alpha()])
+    left_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '00.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '11.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '22.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '33.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '44.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '55.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '66.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '77.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', '88.png')).convert_alpha()])
+    state_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '111.png')).convert_alpha()])
     anima = state_animation
     clock = pygame.time.Clock()
     i = 0
@@ -219,6 +250,9 @@ if __name__ == '__main__':
                     vertical_movement[0] = False
                 if event.key == pygame.K_DOWN:
                     vertical_movement[1] = False
+        if defeat:
+            x, y = 30, 360
+            defeat = False
 
         screen.blit(fon, (0, 0))
         anima.update(x, y)
@@ -228,20 +262,21 @@ if __name__ == '__main__':
         animation()
 
         if keys[pygame.K_LEFT] and horizontal_movement[0]:
-            x -= q
+            x -= v
             anima = left_animation
         elif keys[pygame.K_RIGHT] and horizontal_movement[1]:
-            x += q
+            x += v
             anima = right_animation
         elif keys[pygame.K_UP] and vertical_movement[0]:
-            y -= q
+            y -= v
         elif keys[pygame.K_DOWN] and vertical_movement[1]:
-            y += q
+            y += v
         if vniz and not jump_status:
-            y += q + 10
+            y += v + 10
 
         # screen.blit(anima, (0, 0))
         tiles_group.draw(screen)
+        defeat_group.draw(screen)
         # player_group.draw(screen)
         pygame.display.flip()
         clock.tick(20)
