@@ -8,6 +8,7 @@ horizontal_movement = [True, True]
 jump = True
 vniz = False
 defeat = False
+count_life = 3
 v = 5
 
 player = None
@@ -29,14 +30,18 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect()
+        self.counter = 0
 
     def update(self, x, y):
-        global jump_status, vniz, defeat
+        global jump_status, vniz, defeat, count_life
         # self.mask = pygame.mask.from_surface(self.image) МАСКА!
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect().move(x, y)
         if pygame.sprite.spritecollideany(self, defeat_group):
+            if count_life == 1:
+                print('Ты проиграл')
+            count_life -= 1
             defeat = True
         a = pygame.sprite.spritecollide(self, tiles_group, False)
         l = []
@@ -84,6 +89,19 @@ class AnimatedSprite(pygame.sprite.Sprite):
             vniz = True
 
         screen.blit(self.image, (x, y))
+
+    def life(self, count):
+        if self.counter == 2:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.counter = 0
+        else:
+            self.counter += 1
+        x = 40
+        for _ in range(count):
+            screen.blit(self.image, (x, 40))
+            x += 40
+
 
 
 def generate_level(level):
@@ -230,6 +248,11 @@ if __name__ == '__main__':
                                      pygame.image.load(os.path.join('data', '88.png')).convert_alpha()])
     state_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '111.png')).convert_alpha()])
     anima = state_animation
+    life_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'сердце.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'сердце1.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'сердце2.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'сердце3.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'сердце4.png')).convert_alpha()])
     clock = pygame.time.Clock()
     i = 0
     while running:
@@ -256,6 +279,7 @@ if __name__ == '__main__':
 
         screen.blit(fon, (0, 0))
         anima.update(x, y)
+        life_animation.life(count_life)
         i += 1
         tiles_group.update()
         keys = pygame.key.get_pressed()
