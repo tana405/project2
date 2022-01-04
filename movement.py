@@ -18,6 +18,7 @@ all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 defeat_group = pygame.sprite.Group()
+ladder_group = pygame.sprite.Group()
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -43,6 +44,8 @@ class AnimatedSprite(pygame.sprite.Sprite):
                 print('Ты проиграл')
             count_life -= 1
             defeat = True
+        if pygame.sprite.spritecollideany(self, ladder_group):
+            vertical_movement[0] = True
         a = pygame.sprite.spritecollide(self, tiles_group, False)
         l = []
         r = []
@@ -80,13 +83,19 @@ class AnimatedSprite(pygame.sprite.Sprite):
         if False in u:
             vertical_movement[0] = False
         else:
-            vertical_movement[0] = True
+            # vertical_movement[0] = True
+            pass
         if False in d:
             vertical_movement[1] = False
             vniz = False
         else:
             vertical_movement[1] = True
             vniz = True
+        if pygame.sprite.spritecollideany(self, ladder_group):
+            if vertical_movement[1]:
+                vertical_movement[1] = True
+            vertical_movement[0] = True
+            vniz = False
 
         screen.blit(self.image, (x, y))
 
@@ -101,6 +110,17 @@ class AnimatedSprite(pygame.sprite.Sprite):
         for _ in range(count):
             screen.blit(self.image, (x, 40))
             x += 40
+
+    def wolf(self):
+        if self.counter == 8:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.counter = 0
+        else:
+            self.counter += 1
+        screen.blit(self.image, (680, 135))
+
+
 
 
 
@@ -126,12 +146,17 @@ def generate_level(level):
                 Tile('island', x, y, tiles_group)
             elif level[y][x] == 'p':
                 Tile('plant', x, y, defeat_group)
+            elif level[y][x] == '+':
+                Tile('landl', x, y, ladder_group)
+                Tile('ladder', x, y, ladder_group)
+            elif level[y][x] == '=':
+                Tile('grassl', x, y, ladder_group)
+                Tile('ladder', x, y, ladder_group)
     return x, y
 
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
-    # если файл не существует, то выходим
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
@@ -141,7 +166,6 @@ def load_image(name, colorkey=None):
 
 def load_level(filename):
     filename = "data/" + filename
-    # читаем уровень, убирая символы перевода строки
     with open(filename, 'r') as mapFile:
         level_map = [line.strip() for line in mapFile]
     return level_map
@@ -157,7 +181,8 @@ tile_images = {
     'land_y_lu': load_image('земля_у_лв.png', -1),
     'land_y_ru': load_image('земля_у_пв.png', -1),
     'island': load_image('остров.png', -1),
-    'plant': load_image('раст.png', -1)
+    'plant': load_image('раст.png', -1),
+    'ladder': load_image('лестн.png', -1)
 }
 # player_image = load_image('mario.png')
 
@@ -183,7 +208,7 @@ class Player(pygame.sprite.Sprite):
 # Сделать все функции и классы
 def animation():
     global jump_status, jump_height, x, y, jump, v
-    if jump_status and vertical_movement[0]:
+    if jump_status:
         if jump_height > 0:
             y -= jump_height
             jump_height -= 4
@@ -253,6 +278,17 @@ if __name__ == '__main__':
                                      pygame.image.load(os.path.join('data', 'сердце2.png')).convert_alpha(),
                                      pygame.image.load(os.path.join('data', 'сердце3.png')).convert_alpha(),
                                      pygame.image.load(os.path.join('data', 'сердце4.png')).convert_alpha()])
+    back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'a2.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'a3.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'a4.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'a5.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'a6.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'a7.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'a8.png')).convert_alpha()])
+    state_back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha()])
+    wolf_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
+                                    pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()])
     clock = pygame.time.Clock()
     i = 0
     while running:
@@ -271,14 +307,18 @@ if __name__ == '__main__':
                     anima = state_animation
                 if event.key == pygame.K_UP:
                     vertical_movement[0] = False
+                    anima = state_back_animation
                 if event.key == pygame.K_DOWN:
                     vertical_movement[1] = False
+                    anima = state_back_animation
         if defeat:
             x, y = 30, 360
             defeat = False
 
         screen.blit(fon, (0, 0))
+        ladder_group.draw(screen)
         anima.update(x, y)
+        wolf_animation.wolf()
         life_animation.life(count_life)
         i += 1
         tiles_group.update()
@@ -293,8 +333,10 @@ if __name__ == '__main__':
             anima = right_animation
         elif keys[pygame.K_UP] and vertical_movement[0]:
             y -= v
+            anima = back_animation
         elif keys[pygame.K_DOWN] and vertical_movement[1]:
             y += v
+            anima = back_animation
         if vniz and not jump_status:
             y += v + 10
 
