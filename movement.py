@@ -10,8 +10,7 @@ vniz = False
 defeat = False
 count_life = 3
 v = 5
-
-player = None
+jump_height = 20
 
 # группы спрайтов
 all_sprites = pygame.sprite.Group()
@@ -19,6 +18,19 @@ tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 defeat_group = pygame.sprite.Group()
 ladder_group = pygame.sprite.Group()
+item_group = pygame.sprite.Group()
+
+size = width, height = 805, 500
+screen = pygame.display.set_mode(size)
+fon = pygame.image.load('data/fon.png')
+screen.blit(fon, (0, 0))
+pygame.display.set_caption('')
+clock = pygame.time.Clock()
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -33,6 +45,9 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.counter = 0
 
+    def image(self):
+        return self.image
+
     def update(self, x, y):
         global jump_status, vniz, defeat, count_life
         # self.mask = pygame.mask.from_surface(self.image) МАСКА!
@@ -44,6 +59,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
                 print('Ты проиграл')
             count_life -= 1
             defeat = True
+
         if pygame.sprite.spritecollideany(self, ladder_group):
             vertical_movement[0] = True
         a = pygame.sprite.spritecollide(self, tiles_group, False)
@@ -99,6 +115,11 @@ class AnimatedSprite(pygame.sprite.Sprite):
 
         screen.blit(self.image, (x, y))
 
+    def transition(self):
+        print(pygame.sprite.spritecollide(self, item_group, False))
+        if pygame.sprite.spritecollideany(self, item_group):
+            return True
+
     def life(self, count):
         if self.counter == 2:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -111,6 +132,19 @@ class AnimatedSprite(pygame.sprite.Sprite):
             screen.blit(self.image, (x, 40))
             x += 40
 
+
+class AnimatedSpriteItem(pygame.sprite.Sprite):
+    def __init__(self, ani):
+        super().__init__(item_group, all_sprites)
+        self.frames = []
+        for i in ani:
+            self.frames.append(i)
+
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.image.get_rect().move(680, 135)
+        self.counter = 0
+
     def wolf(self):
         if self.counter == 8:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -118,10 +152,52 @@ class AnimatedSprite(pygame.sprite.Sprite):
             self.counter = 0
         else:
             self.counter += 1
+        self.rect = self.image.get_rect().move(680, 135)
         screen.blit(self.image, (680, 135))
 
+    def transition(self):
+        if pygame.sprite.spritecollideany(self, player_group):
+            return True
 
 
+# анимация персонажей
+right_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '0.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '1.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '2.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '3.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '4.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '5.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '6.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '7.png')).convert_alpha(),
+                                  pygame.image.load(os.path.join('data', '8.png')).convert_alpha()])
+left_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '00.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '11.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '22.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '33.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '44.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '55.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '66.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '77.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', '88.png')).convert_alpha()])
+state_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '111.png')).convert_alpha()])
+anima = state_animation
+life_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'сердце.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'сердце1.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'сердце2.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'сердце3.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'сердце4.png')).convert_alpha()])
+back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'a2.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'a3.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'a4.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'a5.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'a6.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'a7.png')).convert_alpha(),
+                                 pygame.image.load(os.path.join('data', 'a8.png')).convert_alpha()])
+state_back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha()])
+wolf_animation = AnimatedSpriteItem([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
+                                     pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()])
+player = None
 
 
 def generate_level(level):
@@ -138,6 +214,8 @@ def generate_level(level):
                 Tile('grassr', x, y, tiles_group)
             elif level[y][x] == ',':
                 Tile('landl', x, y, tiles_group)
+            elif level[y][x] == '/':
+                Tile('landr', x, y, tiles_group)
             elif level[y][x] == 'l':
                 Tile('land_y_lu', x, y, tiles_group)
             elif level[y][x] == 'r':
@@ -182,7 +260,8 @@ tile_images = {
     'land_y_ru': load_image('земля_у_пв.png', -1),
     'island': load_image('остров.png', -1),
     'plant': load_image('раст.png', -1),
-    'ladder': load_image('лестн.png', -1)
+    'ladder': load_image('лестн.png', -1),
+    'landr': load_image('землябокп.png', -1)
 }
 # player_image = load_image('mario.png')
 
@@ -197,17 +276,9 @@ class Tile(pygame.sprite.Sprite):
             tile_width * pos_x, tile_height * pos_y + 80)
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(player_group, all_sprites)
-        # self.image = player_image
-        self.rect = self.image.get_rect().move(
-            tile_width * pos_x + 15, tile_height * pos_y + 5)
-
-
 # Сделать все функции и классы
-def animation():
-    global jump_status, jump_height, x, y, jump, v
+def animation(y):
+    global jump_status, jump, v, jump_height
     if jump_status:
         if jump_height > 0:
             y -= jump_height
@@ -222,10 +293,11 @@ def animation():
         jump_status = False
         jump_height = 20
         v = 5
+    return y
 
 
 def keyboard_events_down():
-    global jump_status, jump
+    global jump_status, jump, event
     if event.key == pygame.K_SPACE and jump:
         jump_status = True
     else:
@@ -240,56 +312,12 @@ class Obstacles_land():
     pass  # маски
 
 
-if __name__ == '__main__':
-    pygame.init()
-    size = width, height = 805, 500
-    screen = pygame.display.set_mode(size)
-    fon = pygame.image.load('data/fon.png')
-    screen.blit(fon, (0, 0))
-    pygame.display.set_caption('')
-    level_x, level_y = generate_level(load_level('копия.txt'))
+def level_1():
+    global defeat, anima, jump_status
+    generate_level(load_level('копия.txt'))
     x = 30
     y = 360
-    q = v
     running = True
-    jump_height = 20
-    right_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '0.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '1.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '2.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '3.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '4.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '5.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '6.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '7.png')).convert_alpha(),
-                                      pygame.image.load(os.path.join('data', '8.png')).convert_alpha()])
-    left_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '00.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '11.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '22.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '33.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '44.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '55.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '66.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '77.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', '88.png')).convert_alpha()])
-    state_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '111.png')).convert_alpha()])
-    anima = state_animation
-    life_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'сердце.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'сердце1.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'сердце2.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'сердце3.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'сердце4.png')).convert_alpha()])
-    back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'a2.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'a3.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'a4.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'a5.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'a6.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'a7.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'a8.png')).convert_alpha()])
-    state_back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha()])
-    wolf_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
-                                    pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()])
-    clock = pygame.time.Clock()
     i = 0
     while running:
         for event in pygame.event.get():
@@ -323,7 +351,71 @@ if __name__ == '__main__':
         i += 1
         tiles_group.update()
         keys = pygame.key.get_pressed()
-        animation()
+        y = animation(y)
+
+        if keys[pygame.K_LEFT] and horizontal_movement[0]:
+            x -= v
+            anima = left_animation
+        elif keys[pygame.K_RIGHT] and horizontal_movement[1]:
+            x += v
+            anima = right_animation
+        elif keys[pygame.K_UP] and vertical_movement[0]:
+            y -= v
+            anima = back_animation
+        elif keys[pygame.K_DOWN] and vertical_movement[1]:
+            y += v
+            anima = back_animation
+        if vniz and not jump_status:
+            y += v + 10
+        if pygame.sprite.spritecollideany(anima, item_group):
+            tiles_group.empty()
+            defeat_group.empty()
+            item_group.empty()
+            return
+
+        tiles_group.draw(screen)
+        defeat_group.draw(screen)
+        pygame.display.flip()
+        clock.tick(20)
+
+
+def level_2():
+    global defeat, anima, jump_status
+    generate_level(load_level('2 уровень.txt'))
+    x = 30
+    y = 70
+    running = True
+    i = 0
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and jump:
+                    jump_status = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT:
+                    horizontal_movement[0] = False
+                    anima = state_animation
+                if event.key == pygame.K_RIGHT:
+                    horizontal_movement[1] = False
+                    anima = state_animation
+                if event.key == pygame.K_UP:
+                    vertical_movement[0] = False
+                    anima = state_back_animation
+                if event.key == pygame.K_DOWN:
+                    vertical_movement[1] = False
+                    anima = state_back_animation
+        if defeat:
+            x, y = 30, 360
+            defeat = False
+        screen.blit(fon, (0, 0))
+        life_animation.life(count_life)
+        anima.update(x, y)
+        i += 1
+        tiles_group.update()
+        keys = pygame.key.get_pressed()
+        y = animation(y)
 
         if keys[pygame.K_LEFT] and horizontal_movement[0]:
             x -= v
@@ -347,4 +439,7 @@ if __name__ == '__main__':
         pygame.display.flip()
         clock.tick(20)
 
-    pygame.quit()
+
+level_1()
+level_2()
+terminate()
