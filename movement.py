@@ -1,4 +1,5 @@
 import pygame
+import random
 import os
 import sys
 
@@ -11,6 +12,7 @@ defeat = False
 count_life = 3
 v = 5
 jump_height = 20
+tile_width = tile_height = 35
 
 # группы спрайтов
 all_sprites = pygame.sprite.Group()
@@ -19,9 +21,13 @@ player_group = pygame.sprite.Group()
 defeat_group = pygame.sprite.Group()
 ladder_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
+platform_group = pygame.sprite.Group()
 
+pygame.mixer.init()
 size = width, height = 805, 500
 screen = pygame.display.set_mode(size)
+pygame.mixer.music.load('data/страшный лес.mp3')
+pygame.mixer.music.set_volume(0.05)
 fon = pygame.image.load('data/fon.png')
 screen.blit(fon, (0, 0))
 pygame.display.set_caption('')
@@ -54,7 +60,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect().move(x, y)
-        if pygame.sprite.spritecollideany(self, defeat_group):
+        if pygame.sprite.spritecollideany(self, defeat_group) or y >= 500:
             if count_life == 1:
                 print('Ты проиграл')
             count_life -= 1
@@ -82,9 +88,9 @@ class AnimatedSprite(pygame.sprite.Sprite):
                 u.append(True)
             if i.rect[1] <= y + 70 and i.rect[1] - y > 50:
                 d.append(False)
-                if len(l) == len(d):
+                if len(l) == len(d) and x > 0:
                     l[-1] = True
-                if len(r) == len(d):
+                if len(r) == len(d) and x < 805:
                     r[-1] = True
             else:
                 d.append(True)
@@ -112,13 +118,15 @@ class AnimatedSprite(pygame.sprite.Sprite):
                 vertical_movement[1] = True
             vertical_movement[0] = True
             vniz = False
+        for j in pygame.sprite.spritecollide(self, platform_group, False):
+            if y + 76 >= j.rect[1] > y:
+                x = x - j.v
+                vertical_movement[1] = False
+            # if y <= j.rect[1] + 35 < y + 76:
+            # vertical_movement[0] = False
 
         screen.blit(self.image, (x, y))
-
-    def transition(self):
-        print(pygame.sprite.spritecollide(self, item_group, False))
-        if pygame.sprite.spritecollideany(self, item_group):
-            return True
+        return x, y
 
     def life(self, count):
         if self.counter == 2:
@@ -134,26 +142,28 @@ class AnimatedSprite(pygame.sprite.Sprite):
 
 
 class AnimatedSpriteItem(pygame.sprite.Sprite):
-    def __init__(self, ani):
+    def __init__(self, ani, x, y):
         super().__init__(item_group, all_sprites)
         self.frames = []
+        self.x = x
+        self.y = y
         for i in ani:
             self.frames.append(i)
 
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
-        self.rect = self.image.get_rect().move(680, 135)
+        self.rect = self.image.get_rect().move(self.x, self.y)
         self.counter = 0
 
-    def wolf(self):
-        if self.counter == 8:
+    def update(self):
+        if self.counter == 2:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
             self.counter = 0
         else:
             self.counter += 1
-        self.rect = self.image.get_rect().move(680, 135)
-        screen.blit(self.image, (680, 135))
+        self.rect = self.image.get_rect().move(self.x, self.y)
+        screen.blit(self.image, (self.x, self.y))
 
     def transition(self):
         if pygame.sprite.spritecollideany(self, player_group):
@@ -196,7 +206,7 @@ back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png'
                                  pygame.image.load(os.path.join('data', 'a8.png')).convert_alpha()])
 state_back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha()])
 wolf_animation = AnimatedSpriteItem([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()])
+                                     pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()], 680, 135)
 player = None
 
 
@@ -263,9 +273,9 @@ tile_images = {
     'ladder': load_image('лестн.png', -1),
     'landr': load_image('землябокп.png', -1)
 }
-# player_image = load_image('mario.png')
 
-tile_width = tile_height = 35
+
+# player_image = load_image('mario.png')
 
 
 class Tile(pygame.sprite.Sprite):
@@ -274,6 +284,24 @@ class Tile(pygame.sprite.Sprite):
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y + 80)
+
+
+class Platform(pygame.sprite.Sprite):
+    image = load_image("платформа.png")  # изображение платформы
+
+    def __init__(self, y, mi, ma):
+        super().__init__(platform_group, all_sprites)
+        self.image = Platform.image
+        # screen.blit(self.image, (200, y))
+        self.mi = mi
+        self.ma = ma
+        self.rect = self.image.get_rect().move(random.randint(self.mi, self.ma), y)
+        self.v = random.randint(3, 7)
+
+    def update(self):
+        if self.rect[0] >= self.ma or self.rect[0] <= self.mi:
+            self.v = - self.v
+        self.rect = self.image.get_rect().move(self.rect[0] - self.v, self.rect[1])
 
 
 # Сделать все функции и классы
@@ -304,14 +332,6 @@ def keyboard_events_down():
         jump_status = False
 
 
-class Borders():
-    pass  # границы игры
-
-
-class Obstacles_land():
-    pass  # маски
-
-
 def level_1():
     global defeat, anima, jump_status
     generate_level(load_level('копия.txt'))
@@ -322,9 +342,10 @@ def level_1():
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                return False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and jump:
+                if event.key == pygame.K_SPACE and jump and (not vertical_movement[1] or
+                                                             pygame.sprite.spritecollideany(anima, ladder_group)):
                     jump_status = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
@@ -346,7 +367,7 @@ def level_1():
         screen.blit(fon, (0, 0))
         ladder_group.draw(screen)
         anima.update(x, y)
-        wolf_animation.wolf()
+        wolf_animation.update()
         life_animation.life(count_life)
         i += 1
         tiles_group.update()
@@ -371,7 +392,8 @@ def level_1():
             tiles_group.empty()
             defeat_group.empty()
             item_group.empty()
-            return
+            ladder_group.empty()
+            return level_2()
 
         tiles_group.draw(screen)
         defeat_group.draw(screen)
@@ -382,6 +404,16 @@ def level_1():
 def level_2():
     global defeat, anima, jump_status
     generate_level(load_level('2 уровень.txt'))
+    Platform(120, 100, 500)
+    Platform(250, 200, 300)
+    Platform(380, 300, 565)
+    snake_animation = AnimatedSpriteItem([pygame.image.load(os.path.join('data', 'змея1.png')).convert_alpha(),
+                                          pygame.image.load(os.path.join('data', 'змея2.png')).convert_alpha(),
+                                          pygame.image.load(os.path.join('data', 'змея3.png')).convert_alpha(),
+                                          pygame.image.load(os.path.join('data', 'змея4.png')).convert_alpha()],
+                                         700, 365)
+
+    q = 0
     x = 30
     y = 70
     running = True
@@ -391,7 +423,8 @@ def level_2():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and jump:
+                if event.key == pygame.K_SPACE and jump and (not vertical_movement[1] or
+                                                             pygame.sprite.spritecollideany(anima, ladder_group)):
                     jump_status = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
@@ -407,12 +440,15 @@ def level_2():
                     vertical_movement[1] = False
                     anima = state_back_animation
         if defeat:
-            x, y = 30, 360
+            x, y = 30, 70
             defeat = False
         screen.blit(fon, (0, 0))
         life_animation.life(count_life)
-        anima.update(x, y)
+        snake_animation.update()
+        x, y = anima.update(x, y)
         i += 1
+        platform_group.update()
+        platform_group.draw(screen)
         tiles_group.update()
         keys = pygame.key.get_pressed()
         y = animation(y)
@@ -420,26 +456,34 @@ def level_2():
         if keys[pygame.K_LEFT] and horizontal_movement[0]:
             x -= v
             anima = left_animation
-        elif keys[pygame.K_RIGHT] and horizontal_movement[1]:
+        if keys[pygame.K_RIGHT] and horizontal_movement[1]:
             x += v
             anima = right_animation
-        elif keys[pygame.K_UP] and vertical_movement[0]:
+        if keys[pygame.K_UP] and vertical_movement[0]:
             y -= v
             anima = back_animation
-        elif keys[pygame.K_DOWN] and vertical_movement[1]:
+        if keys[pygame.K_DOWN] and vertical_movement[1]:
             y += v
             anima = back_animation
-        if vniz and not jump_status:
+        if vniz and not jump_status and vertical_movement[1]:
             y += v + 10
+        if pygame.sprite.spritecollideany(anima, item_group):
+            tiles_group.empty()
+            defeat_group.empty()
+            item_group.empty()
+            ladder_group.empty()
+            return
 
-        # screen.blit(anima, (0, 0))
         tiles_group.draw(screen)
         defeat_group.draw(screen)
-        # player_group.draw(screen)
         pygame.display.flip()
         clock.tick(20)
 
 
-level_1()
-level_2()
-terminate()
+def main():
+    pygame.mixer.music.play(-1)
+    level_1()
+    terminate()
+
+
+main()
