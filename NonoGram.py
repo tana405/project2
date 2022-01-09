@@ -3,9 +3,9 @@ import database
 
 
 class NonoGram:
-    def __init__(self, height_pix, width_pix, pic_name):
+    def __init__(self, width_pix, height_pix, pic_name):
         self.ots = 100
-        size = (height_pix, width_pix)
+        size = (width_pix, height_pix)
         self.screen = pygame.display.set_mode(size)
         db = database.Db('./picture/pictures')
         self.decision = db.load(pic_name)
