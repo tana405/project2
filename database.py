@@ -5,13 +5,13 @@ class Db:
     def __init__(self, path):
         self.path = path
 
-    def load(self):
+    def load(self, tab):
         conn = None
         sp = []
         try:
             conn = sqlite3.connect(self.path)
             cur = conn.cursor()
-            data = cur.execute('''SELECT * FROM pic ORDER BY rowid''').fetchall()
+            data = cur.execute("SELECT * FROM '{}' ORDER BY rowid".format(tab)).fetchall()
 
             for i in data:
                 row = []
