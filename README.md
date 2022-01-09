@@ -1,6 +1,6 @@
 # project2
 
-Использование класса **NoneGram**
+Использование класса **NonoGram**
 
 ```python
 import NonoGram
