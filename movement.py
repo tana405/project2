@@ -2,6 +2,7 @@ import pygame
 import random
 import os
 import sys
+from starting_final_window import *
 
 jump_status = False
 vertical_movement = [False, False]
@@ -23,6 +24,7 @@ ladder_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 platform_group = pygame.sprite.Group()
 
+pygame.init()
 pygame.mixer.init()
 size = width, height = 805, 500
 screen = pygame.display.set_mode(size)
@@ -332,6 +334,62 @@ def keyboard_events_down():
         jump_status = False
 
 
+class Button():
+
+    def __init__(self, name, x, y):
+        font = pygame.font.Font(None, 30)
+        self.x = x
+        self.y = y
+        self.text = font.render(name, True, (0, 0, 0))
+        self.text_w = self.text.get_width()
+        self.text_h = self.text.get_height()
+        pygame.draw.rect(screen, (130, 150, 40), (x, y,
+                                                  self.text_w + 20, self.text_h + 20), 0)
+        screen.blit(self.text, (x + 10, y + 10))
+
+    def update(self, k):
+        if self.x <= k[0] <= self.x + self.text_w and self.y <= k[1] <= self.y + self.text_h:
+            pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y,
+                                                 self.text_w + 20, self.text_h + 20), 2)
+            return True
+        else:
+            pygame.draw.rect(screen, (130, 150, 40), (self.x, self.y,
+                                                      self.text_w + 20, self.text_h + 20), 0)
+            screen.blit(self.text, (self.x + 10, self.y + 10))
+            return False
+
+
+
+def start_window():
+    print(1)
+    fon = pygame.transform.scale(load_image('fon.png'), (805, 500))
+    text = pygame.transform.scale(load_image('текст.png'), (600, 170))
+    screen.blit(fon, (0, 0))
+    screen.blit(text, (190, 100))
+    font = pygame.font.Font(None, 50)
+    text = font.render('Поиск Норта', True, (0, 0, 0))
+    screen.blit(text, (275, 30))
+    a = Button('ИГРАТЬ', 30, 125)
+    b = Button('Инструкция', 30, 200)
+    text_coord = 50
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            elif event.type == pygame.MOUSEMOTION:
+                a.update(event.pos)
+                b.update(event.pos)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if a.update(event.pos):
+                    return level_1()
+                elif b.update(event.pos):
+                    pass
+
+        pygame.display.flip()
+        clock.tick(50)
+
+
 def level_1():
     global defeat, anima, jump_status
     generate_level(load_level('копия.txt'))
@@ -482,7 +540,7 @@ def level_2():
 
 def main():
     pygame.mixer.music.play(-1)
-    level_1()
+    start_window()
     terminate()
 
 
