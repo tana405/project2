@@ -16,17 +16,17 @@ class NonoGram:
         self.top = self.ots
         self.cell_size = (width_pix - (2 * self.ots)) // len(self.decision)
         self.colors = ['white', 'black']
+        self.running = True
 
     def start(self):
         pygame.init()
-        pygame.display.set_caption('NoneGram')
+        pygame.display.set_caption('NonoGram')
         self.screen.fill((255, 255, 255))
         self.print_int()
-        running = True
-        while running:
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.get_click(event.pos)
                     pygame.display.flip()
@@ -77,6 +77,11 @@ class NonoGram:
                         position += wdth + 2 *(self.cell_size // 5)
                         self.screen.blit(text, (position, j * self.cell_size + self.top + 2 * (self.cell_size // 5)))
                         c = 0
+            if c > 0:
+                text = font.render(str(c), True, (0, 0, 0))
+                wdth = text.get_width()
+                position += wdth + 2 * (self.cell_size // 5)
+                self.screen.blit(text, (position, j * self.cell_size + self.top + 2 * (self.cell_size // 5)))
             # print()
         for j in range(len(self.decision[0])):
             c = 0
@@ -92,6 +97,11 @@ class NonoGram:
                         position += h + 2 * (self.cell_size // 5)
                         self.screen.blit(text, (j * self.cell_size + self.top + 2 * (self.cell_size // 5), position))
                         c = 0
+            if c > 0:
+                text = font.render(str(c), True, (0, 0, 0))
+                wdth = text.get_width()
+                position += wdth + 2 * (self.cell_size // 5)
+                self.screen.blit(text, (position, j * self.cell_size + self.top + 2 * (self.cell_size // 5)))
 
     def is_win(self):
         for j in range(len(self.board)):
@@ -114,7 +124,8 @@ class NonoGram:
         pygame.display.flip()
         if self.is_win():
             print("You win")
-            pygame.quit()
+            self.running = False
+
 
 
 if __name__ == '__main__':
