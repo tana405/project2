@@ -1,6 +1,8 @@
 import pygame
 import database
 import movement
+import os
+import final
 
 
 class NonoGram:
@@ -34,11 +36,12 @@ class NonoGram:
                         # Финальное окно
                         pass
                     self.running = False
-                if event.type == pygame.QUIT:
-                    self.running = False
+                if event.type == pygame.QUIT and not self.is_win():
+                    win = final.Final_Window()
+                    win.start()
+                    return
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.get_click(event.pos)
-                    pygame.display.flip()
             pygame.display.flip()
             self.render(self.screen)
         pygame.quit()
@@ -132,9 +135,11 @@ class NonoGram:
             self.cell_size))
         pygame.display.flip()
         # if self.is_win():
-        # print("You win")
+        #     print("You win")
+        #     return True
         # self.running = False
 
-# if __name__ == '__main__':
-# noneGram = NonoGram(700, 700, "pic_2")
-# noneGram.start()
+
+if __name__ == '__main__':
+    noneGram = NonoGram(700, 700, "pic_1")
+    print(noneGram.start())
