@@ -16,14 +16,14 @@ class NonoGram:
         self.left = self.ots
         self.top = self.ots
         self.cell_size = (width_pix - (2 * self.ots)) // len(self.decision)
-        self.colors = ['white', 'black']
+        self.colors = ['#78944F', 'black']
         self.pic_name = pic_name
         self.running = True
 
     def start(self):
         pygame.init()
         pygame.display.set_caption('NonoGram')
-        self.screen.fill((255, 255, 255))
+        self.screen.fill((120, 148, 79))
         self.print_int()
         while self.running:
             for event in pygame.event.get():
