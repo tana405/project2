@@ -2,7 +2,7 @@ import pygame
 import random
 import os
 import sys
-from starting_final_window import *
+import NonoGram
 
 jump_status = False
 vertical_movement = [False, False]
@@ -28,12 +28,12 @@ pygame.init()
 pygame.mixer.init()
 size = width, height = 805, 500
 screen = pygame.display.set_mode(size)
-pygame.mixer.music.load('data/страшный лес.mp3')
-pygame.mixer.music.set_volume(0.05)
 fon = pygame.image.load('data/fon.png')
 screen.blit(fon, (0, 0))
 pygame.display.set_caption('')
 clock = pygame.time.Clock()
+pygame.mixer.music.load('data/страшный лес.mp3')
+pygame.mixer.music.set_volume(0.05)
 
 
 def terminate():
@@ -157,8 +157,8 @@ class AnimatedSpriteItem(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(self.x, self.y)
         self.counter = 0
 
-    def update(self):
-        if self.counter == 2:
+    def update(self, a):
+        if self.counter == a:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
             self.counter = 0
@@ -335,7 +335,6 @@ def keyboard_events_down():
 
 
 class Button():
-
     def __init__(self, name, x, y):
         font = pygame.font.Font(None, 30)
         self.x = x
@@ -354,15 +353,13 @@ class Button():
             return True
         else:
             pygame.draw.rect(screen, (130, 150, 40), (self.x, self.y,
-                                                      self.text_w + 20, self.text_h + 20), 0)
-            screen.blit(self.text, (self.x + 10, self.y + 10))
+                                                      self.text_w + 20, self.text_h + 20), 2)
             return False
 
 
-
 def start_window():
-    print(1)
-    fon = pygame.transform.scale(load_image('fon.png'), (805, 500))
+    global size
+    screen = pygame.display.set_mode(size)
     text = pygame.transform.scale(load_image('текст.png'), (600, 170))
     screen.blit(fon, (0, 0))
     screen.blit(text, (190, 100))
@@ -371,7 +368,6 @@ def start_window():
     screen.blit(text, (275, 30))
     a = Button('ИГРАТЬ', 30, 125)
     b = Button('Инструкция', 30, 200)
-    text_coord = 50
 
     while True:
         for event in pygame.event.get():
@@ -391,7 +387,8 @@ def start_window():
 
 
 def level_1():
-    global defeat, anima, jump_status
+    global defeat, anima, jump_status, size
+    screen = pygame.display.set_mode(size)
     generate_level(load_level('копия.txt'))
     x = 30
     y = 360
@@ -425,7 +422,7 @@ def level_1():
         screen.blit(fon, (0, 0))
         ladder_group.draw(screen)
         anima.update(x, y)
-        wolf_animation.update()
+        wolf_animation.update(8)
         life_animation.life(count_life)
         i += 1
         tiles_group.update()
@@ -451,7 +448,8 @@ def level_1():
             defeat_group.empty()
             item_group.empty()
             ladder_group.empty()
-            return level_2()
+            noneGram = NonoGram.NonoGram(700, 700, "pic_1")
+            return noneGram.start()
 
         tiles_group.draw(screen)
         defeat_group.draw(screen)
@@ -460,7 +458,8 @@ def level_1():
 
 
 def level_2():
-    global defeat, anima, jump_status
+    global defeat, anima, jump_status, size
+    screen = pygame.display.set_mode(size)
     generate_level(load_level('2 уровень.txt'))
     Platform(120, 100, 500)
     Platform(250, 200, 300)
@@ -471,7 +470,6 @@ def level_2():
                                           pygame.image.load(os.path.join('data', 'змея4.png')).convert_alpha()],
                                          700, 365)
 
-    q = 0
     x = 30
     y = 70
     running = True
@@ -502,7 +500,7 @@ def level_2():
             defeat = False
         screen.blit(fon, (0, 0))
         life_animation.life(count_life)
-        snake_animation.update()
+        snake_animation.update(2)
         x, y = anima.update(x, y)
         i += 1
         platform_group.update()
@@ -530,18 +528,10 @@ def level_2():
             defeat_group.empty()
             item_group.empty()
             ladder_group.empty()
-            return
+            nonegram = NonoGram.NonoGram(700, 700, "pic_2")
+            return nonegram.start()
 
         tiles_group.draw(screen)
         defeat_group.draw(screen)
         pygame.display.flip()
         clock.tick(20)
-
-
-def main():
-    pygame.mixer.music.play(-1)
-    start_window()
-    terminate()
-
-
-main()

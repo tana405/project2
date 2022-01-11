@@ -1,5 +1,6 @@
 import pygame
 import database
+import movement
 
 
 class NonoGram:
@@ -16,6 +17,7 @@ class NonoGram:
         self.top = self.ots
         self.cell_size = (width_pix - (2 * self.ots)) // len(self.decision)
         self.colors = ['white', 'black']
+        self.pic_name = pic_name
         self.running = True
 
     def start(self):
@@ -25,6 +27,13 @@ class NonoGram:
         self.print_int()
         while self.running:
             for event in pygame.event.get():
+                if self.is_win():
+                    if self.pic_name == 'pic_1':
+                        return movement.level_2()
+                    else:
+                        # Финальное окно
+                        pass
+                    self.running = False
                 if event.type == pygame.QUIT:
                     self.running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -74,7 +83,7 @@ class NonoGram:
                         # print("{}".format(c), end=' ')
                         text = font.render(str(c), True, (0, 0, 0))
                         wdth = text.get_width()
-                        position += wdth + 2 *(self.cell_size // 5)
+                        position += wdth + 2 * (self.cell_size // 5)
                         self.screen.blit(text, (position, j * self.cell_size + self.top + 2 * (self.cell_size // 5)))
                         c = 0
             if c > 0:
@@ -122,12 +131,10 @@ class NonoGram:
             self.cell_size,
             self.cell_size))
         pygame.display.flip()
-        if self.is_win():
-            print("You win")
-            self.running = False
+        # if self.is_win():
+        # print("You win")
+        # self.running = False
 
-
-
-if __name__ == '__main__':
-    noneGram = NonoGram(700, 700, "pic_2")
-    noneGram.start()
+# if __name__ == '__main__':
+# noneGram = NonoGram(700, 700, "pic_2")
+# noneGram.start()
