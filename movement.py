@@ -3,6 +3,7 @@ import random
 import os
 import sys
 import NonoGram
+import final
 
 jump_status = False
 vertical_movement = [False, False]
@@ -10,7 +11,6 @@ horizontal_movement = [True, True]
 jump = True
 vniz = False
 defeat = False
-count_life = 3
 v = 5
 jump_height = 20
 tile_width = tile_height = 35
@@ -41,6 +41,11 @@ def terminate():
     sys.exit()
 
 
+def liv():
+    global count_life
+    return count_life
+
+
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, ani):
         super().__init__(player_group, all_sprites)
@@ -56,15 +61,13 @@ class AnimatedSprite(pygame.sprite.Sprite):
     def image(self):
         return self.image
 
-    def update(self, x, y):
-        global jump_status, vniz, defeat, count_life
+    def update(self, x, y, count_life):
+        global jump_status, vniz, defeat
         # self.mask = pygame.mask.from_surface(self.image) МАСКА!
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect().move(x, y)
         if pygame.sprite.spritecollideany(self, defeat_group) or y >= 500:
-            if count_life == 1:
-                print('Ты проиграл')
             count_life -= 1
             defeat = True
 
@@ -128,9 +131,10 @@ class AnimatedSprite(pygame.sprite.Sprite):
             # vertical_movement[0] = False
 
         screen.blit(self.image, (x, y))
-        return x, y
+        return x, y, count_life
 
-    def life(self, count):
+    def life(self, count_life, y):
+        global defeat
         if self.counter == 2:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
@@ -138,9 +142,15 @@ class AnimatedSprite(pygame.sprite.Sprite):
         else:
             self.counter += 1
         x = 40
-        for _ in range(count):
+        for _ in range(count_life):
             screen.blit(self.image, (x, 40))
             x += 40
+        if pygame.sprite.spritecollideany(anima, defeat_group) or y >= 500:
+            print(count_life)
+            if count_life == 0:
+                print('Ты проиграл')
+                a = final.Final_Window()
+                return a.start()
 
 
 class AnimatedSpriteItem(pygame.sprite.Sprite):
@@ -334,60 +344,9 @@ def keyboard_events_down():
         jump_status = False
 
 
-class Button():
-    def __init__(self, name, x, y):
-        font = pygame.font.Font(None, 30)
-        self.x = x
-        self.y = y
-        self.text = font.render(name, True, (0, 0, 0))
-        self.text_w = self.text.get_width()
-        self.text_h = self.text.get_height()
-        pygame.draw.rect(screen, (130, 150, 40), (x, y,
-                                                  self.text_w + 20, self.text_h + 20), 0)
-        screen.blit(self.text, (x + 10, y + 10))
-
-    def update(self, k):
-        if self.x <= k[0] <= self.x + self.text_w and self.y <= k[1] <= self.y + self.text_h:
-            pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y,
-                                                 self.text_w + 20, self.text_h + 20), 2)
-            return True
-        else:
-            pygame.draw.rect(screen, (130, 150, 40), (self.x, self.y,
-                                                      self.text_w + 20, self.text_h + 20), 2)
-            return False
-
-
-def start_window():
-    global size
-    screen = pygame.display.set_mode(size)
-    text = pygame.transform.scale(load_image('текст.png'), (600, 170))
-    screen.blit(fon, (0, 0))
-    screen.blit(text, (190, 100))
-    font = pygame.font.Font(None, 50)
-    text = font.render('Поиск Норта', True, (0, 0, 0))
-    screen.blit(text, (275, 30))
-    a = Button('ИГРАТЬ', 30, 125)
-    b = Button('Инструкция', 30, 200)
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
-            elif event.type == pygame.MOUSEMOTION:
-                a.update(event.pos)
-                b.update(event.pos)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if a.update(event.pos):
-                    return level_1()
-                elif b.update(event.pos):
-                    pass
-
-        pygame.display.flip()
-        clock.tick(50)
-
-
 def level_1():
     global defeat, anima, jump_status, size
+    count_life = 3
     screen = pygame.display.set_mode(size)
     generate_level(load_level('копия.txt'))
     x = 30
@@ -397,7 +356,9 @@ def level_1():
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return False
+                a = final.Final_Window()
+                a.start()
+                return
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and jump and (not vertical_movement[1] or
                                                              pygame.sprite.spritecollideany(anima, ladder_group)):
@@ -421,9 +382,9 @@ def level_1():
 
         screen.blit(fon, (0, 0))
         ladder_group.draw(screen)
-        anima.update(x, y)
+        x, y, count_life = anima.update(x, y, count_life)
         wolf_animation.update(8)
-        life_animation.life(count_life)
+        life_animation.life(count_life, y)
         i += 1
         tiles_group.update()
         keys = pygame.key.get_pressed()
@@ -449,7 +410,7 @@ def level_1():
             item_group.empty()
             ladder_group.empty()
             noneGram = NonoGram.NonoGram(700, 700, "pic_1")
-            return noneGram.start()
+            return noneGram.start(count_life)
 
         tiles_group.draw(screen)
         defeat_group.draw(screen)
@@ -457,7 +418,7 @@ def level_1():
         clock.tick(20)
 
 
-def level_2():
+def level_2(count_life):
     global defeat, anima, jump_status, size
     screen = pygame.display.set_mode(size)
     generate_level(load_level('2 уровень.txt'))
@@ -477,7 +438,9 @@ def level_2():
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                a = final.Final_Window()
+                a.start()
+                return
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and jump and (not vertical_movement[1] or
                                                              pygame.sprite.spritecollideany(anima, ladder_group)):
@@ -499,9 +462,9 @@ def level_2():
             x, y = 30, 70
             defeat = False
         screen.blit(fon, (0, 0))
-        life_animation.life(count_life)
+        life_animation.life(count_life, y)
         snake_animation.update(2)
-        x, y = anima.update(x, y)
+        x, y, count_life = anima.update(x, y, count_life)
         i += 1
         platform_group.update()
         platform_group.draw(screen)

@@ -1,7 +1,6 @@
 import pygame
 import database
-import movement
-import os
+import window
 
 
 class Final_Window:
@@ -26,10 +25,12 @@ class Final_Window:
         while self.run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    print('yeees')
                     self.run = False
-                # if event.type == pygame.MOUSEBUTTONDOWN:
-                #     ## функия кнопки self.get_click(event.pos)
-                #     #pygame.display.flip()
+                    # Нужно запустить игру заново
+                    return window.start_window()
+
             pygame.display.flip()
         pygame.quit()
+
+# a = Final_Window()
+# a.start()

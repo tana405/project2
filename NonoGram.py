@@ -22,7 +22,7 @@ class NonoGram:
         self.pic_name = pic_name
         self.running = True
 
-    def start(self):
+    def start(self, count_life):
         pygame.init()
         pygame.display.set_caption('NonoGram')
         self.screen.fill((120, 148, 79))
@@ -31,7 +31,7 @@ class NonoGram:
             for event in pygame.event.get():
                 if self.is_win():
                     if self.pic_name == 'pic_1':
-                        return movement.level_2()
+                        return movement.level_2(count_life)
                     else:
                         # Финальное окно
                         pass
@@ -139,7 +139,6 @@ class NonoGram:
         #     return True
         # self.running = False
 
-
-if __name__ == '__main__':
-    noneGram = NonoGram(700, 700, "pic_1")
-    print(noneGram.start())
+# if __name__ == '__main__':
+# noneGram = NonoGram(700, 700, "pic_1")
+# print(noneGram.start(count_life))
