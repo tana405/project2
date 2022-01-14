@@ -202,7 +202,6 @@ left_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '00.png'
                                  pygame.image.load(os.path.join('data', '77.png')).convert_alpha(),
                                  pygame.image.load(os.path.join('data', '88.png')).convert_alpha()])
 state_animation = AnimatedSprite([pygame.image.load(os.path.join('data', '111.png')).convert_alpha()])
-anima = state_animation
 life_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'сердце.png')).convert_alpha(),
                                  pygame.image.load(os.path.join('data', 'сердце1.png')).convert_alpha(),
                                  pygame.image.load(os.path.join('data', 'сердце2.png')).convert_alpha(),
@@ -219,6 +218,7 @@ back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png'
 state_back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha()])
 wolf_animation = AnimatedSpriteItem([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
                                      pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()], 680, 135)
+anima = state_animation
 player = None
 
 
@@ -345,8 +345,9 @@ def keyboard_events_down():
 
 
 def level_1():
-    global defeat, anima, jump_status, size
+    global defeat, jump_status, size, anima
     count_life = 3
+    anima = state_animation
     screen = pygame.display.set_mode(size)
     generate_level(load_level('копия.txt'))
     x = 30
@@ -419,7 +420,8 @@ def level_1():
 
 
 def level_2(count_life):
-    global defeat, anima, jump_status, size
+    global defeat, jump_status, size, anima
+    anima = state_animation
     screen = pygame.display.set_mode(size)
     generate_level(load_level('2 уровень.txt'))
     Platform(120, 100, 500)
@@ -492,7 +494,7 @@ def level_2(count_life):
             item_group.empty()
             ladder_group.empty()
             nonegram = NonoGram.NonoGram(700, 700, "pic_2")
-            return nonegram.start()
+            return nonegram.start(count_life)
 
         tiles_group.draw(screen)
         defeat_group.draw(screen)

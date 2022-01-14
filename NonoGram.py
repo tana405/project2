@@ -3,6 +3,7 @@ import database
 import movement
 import os
 import final
+import window
 
 
 class NonoGram:
@@ -33,9 +34,7 @@ class NonoGram:
                     if self.pic_name == 'pic_1':
                         return movement.level_2(count_life)
                     else:
-                        # Финальное окно
-                        pass
-                    self.running = False
+                        return
                 if event.type == pygame.QUIT and not self.is_win():
                     win = final.Final_Window()
                     win.start()
