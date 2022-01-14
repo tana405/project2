@@ -150,6 +150,10 @@ class AnimatedSprite(pygame.sprite.Sprite):
             if count_life == 0:
                 print('Ты проиграл')
                 a = final.Final_Window()
+                tiles_group.empty()
+                defeat_group.empty()
+                item_group.empty()
+                ladder_group.empty()
                 return a.start()
 
 
@@ -420,6 +424,7 @@ def level_1():
 
 
 def level_2(count_life):
+    print(count_life)
     global defeat, jump_status, size, anima
     anima = state_animation
     screen = pygame.display.set_mode(size)

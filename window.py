@@ -202,6 +202,10 @@ def finish_window(rez):
                     q = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if c.update(event.pos):
+                    movement.tiles_group.empty()
+                    movement.defeat_group.empty()
+                    movement.item_group.empty()
+                    movement.ladder_group.empty()
                     return start_window()
         screen.blit(fon, (0, 0))
         movement.tiles_group.draw(screen)
