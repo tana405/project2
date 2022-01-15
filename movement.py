@@ -220,8 +220,7 @@ back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png'
                                  pygame.image.load(os.path.join('data', 'a7.png')).convert_alpha(),
                                  pygame.image.load(os.path.join('data', 'a8.png')).convert_alpha()])
 state_back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha()])
-wolf_animation = AnimatedSpriteItem([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
-                                     pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()], 680, 135)
+
 anima = state_animation
 player = None
 
@@ -352,6 +351,9 @@ def level_1():
     global defeat, jump_status, size, anima
     count_life = 3
     anima = state_animation
+    wolf_animation = AnimatedSpriteItem([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
+                                         pygame.image.load(os.path.join('data', 'волк2.png')).convert_alpha()], 680,
+                                        135)
     screen = pygame.display.set_mode(size)
     generate_level(load_level('копия.txt'))
     x = 30
@@ -498,6 +500,9 @@ def level_2(count_life):
             defeat_group.empty()
             item_group.empty()
             ladder_group.empty()
+            platform_group.empty()
+            anima = state_animation
+            platform_group.rect = (30, 360, 39, 74)
             nonegram = NonoGram.NonoGram(700, 700, "pic_2")
             return nonegram.start(count_life)
 

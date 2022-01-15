@@ -5,6 +5,7 @@ import sys
 import os
 import datetime as dt
 
+
 pygame.init()
 size = width, height = 805, 500
 screen = pygame.display.set_mode(size)
@@ -206,7 +207,7 @@ def finish_window(rez):
                     movement.defeat_group.empty()
                     movement.item_group.empty()
                     movement.ladder_group.empty()
-                    return start_window()
+                    return True
         screen.blit(fon, (0, 0))
         movement.tiles_group.draw(screen)
         screen.blit(text, (275, 30))
