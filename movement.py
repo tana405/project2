@@ -23,27 +23,31 @@ defeat_group = pygame.sprite.Group()
 ladder_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 platform_group = pygame.sprite.Group()
+liv_group = pygame.sprite.Group()
 
 pygame.init()
 pygame.mixer.init()
 size = width, height = 805, 500
 screen = pygame.display.set_mode(size)
+programIcon = pygame.image.load('data/icon.png')
+pygame.display.set_icon(programIcon)
+pygame.display.set_caption('Поиск Норта')
 fon = pygame.image.load('data/fon.png')
 screen.blit(fon, (0, 0))
 pygame.display.set_caption('')
 clock = pygame.time.Clock()
 pygame.mixer.music.load('data/страшный лес.mp3')
 pygame.mixer.music.set_volume(0.05)
+jump_sound = pygame.mixer.Sound('data/прыжок.mp3')
+step_sound = pygame.mixer.Sound('data/шаг.mp3')
+step_sound.set_volume(0.3)
+jump_sound.set_volume(0.3)
 
 
 def terminate():
     pygame.quit()
     sys.exit()
 
-
-def liv():
-    global count_life
-    return count_life
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -221,10 +225,16 @@ back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png'
                                  pygame.image.load(os.path.join('data', 'a7.png')).convert_alpha(),
                                  pygame.image.load(os.path.join('data', 'a8.png')).convert_alpha()])
 state_back_animation = AnimatedSprite([pygame.image.load(os.path.join('data', 'a1.png')).convert_alpha()])
+liv = pygame.image.load(os.path.join('data', 'жизнь.png')).convert_alpha()
+sprite = pygame.sprite.Sprite()
+sprite.image = liv
+sprite.rect = sprite.image.get_rect()
+liv_group.add(sprite)
+sprite.rect.x = 255
+sprite.rect.y = 200
+
 
 anima = state_animation
-player = None
-
 
 def generate_level(level):
     new_player, x, y = None, None, None
@@ -291,8 +301,6 @@ tile_images = {
 }
 
 
-# player_image = load_image('mario.png')
-
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y, group):
@@ -320,7 +328,7 @@ class Platform(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(self.rect[0] - self.v, self.rect[1])
 
 
-# Сделать все функции и классы
+# прыжок
 def animation(y):
     global jump_status, jump, v, jump_height
     if jump_status:
@@ -328,6 +336,7 @@ def animation(y):
             y -= jump_height
             jump_height -= 4
             v = 10
+
 
         else:
             jump_status = False
@@ -350,6 +359,7 @@ def keyboard_events_down():
 
 def level_1():
     global defeat, jump_status, size, anima
+    cek = 0
     count_life = 3
     anima = state_animation
     wolf_animation = AnimatedSpriteItem([pygame.image.load(os.path.join('data', 'волк1.png')).convert_alpha(),
@@ -370,6 +380,7 @@ def level_1():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and jump and (not vertical_movement[1] or
                                                              pygame.sprite.spritecollideany(anima, ladder_group)):
+                    pygame.mixer.Sound.play(jump_sound)
                     jump_status = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
@@ -410,6 +421,12 @@ def level_1():
         elif keys[pygame.K_DOWN] and vertical_movement[1]:
             y += v
             anima = back_animation
+            print(cek)
+        if not vertical_movement[0] and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]) and cek == 4:
+            pygame.mixer.Sound.play(step_sound)
+            cek = 0
+        elif not vertical_movement[0] and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]) and cek != 4:
+            cek += 1
         if vniz and not jump_status:
             y += v + 10
         if pygame.sprite.spritecollideany(anima, item_group):
@@ -420,9 +437,12 @@ def level_1():
             platform_group.empty()
             noneGram = NonoGram.NonoGram(700, 700, "pic_1")
             return noneGram.start(count_life)
-
+        if pygame.sprite.spritecollideany(anima, liv_group):
+            count_life += 1
+            liv_group.empty()
         tiles_group.draw(screen)
         defeat_group.draw(screen)
+        liv_group.draw(screen)
         pygame.display.flip()
         clock.tick(20)
 
@@ -431,6 +451,7 @@ def level_2(count_life):
     print(count_life)
     global defeat, jump_status, size, anima
     anima = state_animation
+    cek = 0
     screen = pygame.display.set_mode(size)
     generate_level(load_level('2 уровень.txt'))
     Platform(120, 100, 500)
@@ -455,6 +476,7 @@ def level_2(count_life):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and jump and (not vertical_movement[1] or
                                                              pygame.sprite.spritecollideany(anima, ladder_group)):
+                    pygame.mixer.Sound.play(jump_sound)
                     jump_status = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
@@ -495,6 +517,11 @@ def level_2(count_life):
         if keys[pygame.K_DOWN] and vertical_movement[1]:
             y += v
             anima = back_animation
+        if not vertical_movement[0] and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]) and cek == 4:
+            pygame.mixer.Sound.play(step_sound)
+            cek = 0
+        elif not vertical_movement[0] and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]) and cek != 4:
+            cek += 1
         if vniz and not jump_status and vertical_movement[1]:
             y += v + 10
         if pygame.sprite.spritecollideany(anima, item_group):

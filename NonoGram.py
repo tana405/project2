@@ -11,6 +11,8 @@ class NonoGram:
         self.ots = 100
         size = (width_pix, height_pix)
         self.screen = pygame.display.set_mode(size)
+        programIcon = pygame.image.load('data/icon.png')
+        pygame.display.set_icon(programIcon)
         db = database.Db('./picture/pictures')
         self.decision = db.load(pic_name)
         self.width = len(self.decision[0])
@@ -25,7 +27,7 @@ class NonoGram:
 
     def start(self, count_life):
         pygame.init()
-        pygame.display.set_caption('NonoGram')
+        pygame.display.set_caption('Поиск Норта')
         self.screen.fill((120, 148, 79))
         self.print_int()
         while self.running:

@@ -7,6 +7,8 @@ class Final_Window:
     def __init__(self):
         size = self.width, self.height = 500, 400
         self.screen = pygame.display.set_mode(size)
+        programIcon = pygame.image.load('data/icon.png')
+        pygame.display.set_icon(programIcon)
         self.run = True
 
     def load_final_w(self):

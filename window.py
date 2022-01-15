@@ -9,6 +9,8 @@ import datetime as dt
 pygame.init()
 size = width, height = 805, 500
 screen = pygame.display.set_mode(size)
+programIcon = pygame.image.load('data/icon.png')
+pygame.display.set_icon(programIcon)
 fon = pygame.image.load('data/fon.png')
 screen.blit(fon, (0, 0))
 pygame.display.set_caption('')
@@ -128,6 +130,7 @@ class Meeting(pygame.sprite.Sprite):
 def start_window():
     global size
     screen = pygame.display.set_mode(size)
+    pygame.display.set_caption('Поиск Норта')
     text_1 = pygame.transform.scale(movement.load_image('текст.png'), (600, 170))
     screen.blit(fon, (0, 0))
     screen.blit(text_1, (190, 100))
@@ -178,6 +181,7 @@ def manual():
 def finish_window(rez):
     global size
     screen = pygame.display.set_mode(size)
+    pygame.display.set_caption('Поиск Норта')
     # text = pygame.transform.scale(movement.load_image('текст.png'), (600, 170))
     movement.generate_level(movement.load_level('заключение.txt'))
     screen.blit(fon, (0, 0))
