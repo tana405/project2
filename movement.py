@@ -154,6 +154,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
                 defeat_group.empty()
                 item_group.empty()
                 ladder_group.empty()
+                platform_group.empty()
                 return a.start()
 
 
@@ -416,6 +417,7 @@ def level_1():
             defeat_group.empty()
             item_group.empty()
             ladder_group.empty()
+            platform_group.empty()
             noneGram = NonoGram.NonoGram(700, 700, "pic_1")
             return noneGram.start(count_life)
 
