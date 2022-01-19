@@ -49,7 +49,6 @@ def terminate():
     sys.exit()
 
 
-
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, ani):
         super().__init__(player_group, all_sprites)
@@ -67,7 +66,6 @@ class AnimatedSprite(pygame.sprite.Sprite):
 
     def update(self, x, y, count_life):
         global jump_status, vniz, defeat
-        # self.mask = pygame.mask.from_surface(self.image) МАСКА!
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect().move(x, y)
@@ -114,7 +112,6 @@ class AnimatedSprite(pygame.sprite.Sprite):
         if False in u:
             vertical_movement[0] = False
         else:
-            # vertical_movement[0] = True
             pass
         if False in d:
             vertical_movement[1] = False
@@ -131,8 +128,6 @@ class AnimatedSprite(pygame.sprite.Sprite):
             if y + 76 >= j.rect[1] > y:
                 x = x - j.v
                 vertical_movement[1] = False
-            # if y <= j.rect[1] + 35 < y + 76:
-            # vertical_movement[0] = False
 
         screen.blit(self.image, (x, y))
         return x, y, count_life
@@ -150,9 +145,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
             screen.blit(self.image, (x, 40))
             x += 40
         if pygame.sprite.spritecollideany(anima, defeat_group) or y >= 500:
-            print(count_life)
             if count_life == 0:
-                print('Ты проиграл')
                 a = final.Final_Window()
                 tiles_group.empty()
                 defeat_group.empty()
@@ -233,8 +226,8 @@ liv_group.add(sprite)
 sprite.rect.x = 255
 sprite.rect.y = 200
 
-
 anima = state_animation
+
 
 def generate_level(level):
     new_player, x, y = None, None, None
@@ -299,7 +292,6 @@ tile_images = {
     'ladder': load_image('лестн.png', -1),
     'landr': load_image('землябокп.png', -1)
 }
-
 
 
 class Tile(pygame.sprite.Sprite):
@@ -448,7 +440,6 @@ def level_1():
 
 
 def level_2(count_life):
-    print(count_life)
     global defeat, jump_status, size, anima
     anima = state_animation
     cek = 0
